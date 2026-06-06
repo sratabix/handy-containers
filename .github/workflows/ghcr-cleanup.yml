@@ -1,0 +1,41 @@
+name: GHCR cleanup
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set
+        run: |
+          shopt -s nullglob
+          matrix=$(for f in *.Dockerfile; do
+            name="${f%.Dockerfile}"
+            jq -cn --arg name "${name,,}" '{name:$name}'
+          done | jq -cs '{include: .}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  prune-untagged:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55
+        continue-on-error: true
+        with:
+          package-name: ${{ matrix.name }}
+          package-type: container
+          delete-only-untagged-versions: "true"
+          min-versions-to-keep: "0"
