@@ -1,9 +1,10 @@
-FROM alpine:3
+FROM debian:stable-slim
 
-RUN apk add --no-cache \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
     ffmpeg \
-    bash \
- && adduser -D -u 10001 app
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd -u 10001 -m app
 
 USER app
 WORKDIR /home/app
