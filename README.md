@@ -13,6 +13,7 @@
 | Image      | Purpose                                              |
 | ---------- | --------------------------------------------------- |
 | `unpacker` | Alpine with every common archive tool preinstalled. |
+| `ffprobe`  | Alpine with `ffprobe` as the entrypoint.            |
 
 Pull any of them from `ghcr.io/sratabix/<name>`:
 
